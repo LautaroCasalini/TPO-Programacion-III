@@ -62,19 +62,26 @@ public class GrafoLA implements GrafoTDA {
 			aux = aux.sigNodo;
 		return aux;
 	}
-	
+
 	public void AgregarArista(int x, int y, int w) {
 		NodoVertice n1 = Vertice2Nodo(x);
 		NodoVertice n2 = Vertice2Nodo(y);
-		NodoArista nuevo = new NodoArista();
-		nuevo.peso = w;
-		nuevo.nodoDestino = n2;
-		nuevo.sigArista = n1.arista;
-		n1.arista = nuevo;
-		nuevo.nodoDestino = n1;
-		nuevo.sigArista = n2.arista;
-		n2.arista = nuevo;
+
+		if (n1 == null || n2 == null) return; // Si alguno de los nodos no existe, salir
+
+		NodoArista nuevaArista1 = new NodoArista();
+		nuevaArista1.peso = w;
+		nuevaArista1.nodoDestino = n2;
+		nuevaArista1.sigArista = n1.arista;
+		n1.arista = nuevaArista1;
+
+		NodoArista nuevaArista2 = new NodoArista();
+		nuevaArista2.peso = w;
+		nuevaArista2.nodoDestino = n1;
+		nuevaArista2.sigArista = n2.arista;
+		n2.arista = nuevaArista2;
 	}
+
 
 
 	public void EliminarArista(int x, int y) {

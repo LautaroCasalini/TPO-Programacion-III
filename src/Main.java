@@ -103,33 +103,43 @@ public class Main {
         } catch (Exception e) {
             System.out.println("Error: " + e);
         }
-        try {
-            archivo = new FileReader("src/Archivos/rutas.txt");
-            if (archivo.ready()) {
-                lector = new BufferedReader(archivo);
-                String linea;
-                while ((linea = lector.readLine()) != null) {
-                    String[] NodosInfo = linea.split(",");
-                    int nodoOrigen = Integer.parseInt(NodosInfo[0]);
-                    int nodoDestino = Integer.parseInt(NodosInfo[1]);
-                    int costo = Integer.parseInt(NodosInfo[2]);
-                    grafo.AgregarArista(nodoOrigen,nodoDestino,costo);
+            try {
+                archivo = new FileReader("src/Archivos/rutas.txt");
+                if (archivo.ready()) {
+                    lector = new BufferedReader(archivo);
+                    String linea;
+                    while ((linea = lector.readLine()) != null) {
+                        String[] NodosInfo = linea.split(",");
+                        int nodoOrigen = Integer.parseInt(NodosInfo[0]);
+                        int nodoDestino = Integer.parseInt(NodosInfo[1]);
+                        int costo = Integer.parseInt(NodosInfo[2]);
+
+                        grafo.AgregarArista(nodoOrigen, nodoDestino, costo); // Agregar la arista
+                        System.out.println("Arista agregada: " + nodoOrigen + " -> " + nodoDestino + " (Costo: " + costo + ")");
+                    }
+                }
+            } catch (Exception e){
+                System.out.println("Error " + e);
+            }
+
+
+            ConjuntoTDA vertices = grafo.Vertices();
+            while (!vertices.ConjuntoVacio()) {
+                int v = vertices.Elegir();
+                vertices.Sacar(v);
+
+                ConjuntoTDA vecinos = grafo.Vertices();
+                while (!vecinos.ConjuntoVacio()) {
+                    int u = vecinos.Elegir();
+                    vecinos.Sacar(u);
+                    if (grafo.ExisteArista(v, u)) {
+                        System.out.println("Arista existe: " + u + " -> " + v + " con peso " + grafo.PesoArista(u, v));
+                    }
                 }
             }
-        } catch (Exception e){
-            System.out.println("Error " + e);
+
+
+
+
         }
-
-        GrafoLA testMap = Dijkstra(grafo,51);
-        ConjuntoTDA vertices = testMap.Vertices();
-        while(!vertices.ConjuntoVacio()){
-            int elem = vertices.Elegir();
-            int cost = testMap.PesoArista(51,elem);
-            System.out.println("Origen: 51 " + " -Costo: " + cost + " -Destino: " + elem);
-            vertices.Sacar(elem);
-        }
-
-
-
-    }
 }
