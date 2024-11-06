@@ -4,10 +4,13 @@ import TDAs.grafobi.GrafoLA;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Main {
+    public static ArrayList<Integer> BackTracking(ArrayList<Integer> centros, Integer index, Map<Integer, int[]> infoCentros, Map<Integer, Integer> infoClientes){
+        
+    }
+
     /*Este dijkstra se encargará de devolver un diccionario cuya clave es el nodo origen y como valor es un
     grafo que contiene los costos de alcanzar todos los nodos restantes.
      */
@@ -171,7 +174,11 @@ public class Main {
                 dictGrafosC.put(key, g);
             }
 
-        
+            //Lista con los centros ordenados de mayor a menor
+            List<Integer> keys = new ArrayList<>(dictCentros.keySet());
+            keys.sort(Collections.reverseOrder());
+
+
 
 
         }
