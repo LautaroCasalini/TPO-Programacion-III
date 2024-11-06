@@ -100,6 +100,7 @@ public class Main {
         Map<Integer, int[]> dictCentros = new HashMap<>();
         //El valor de cada clave de dictClientes es el volumen de producción del cliente
         Map<Integer, Integer> dictClientes = new HashMap<>();
+        Map<Integer, GrafoLA> dictGrafosC = new HashMap<>();
 
         //Leemos ambos archivos y los pasamos a un GrafoTDA
         FileReader archivo;
@@ -165,9 +166,12 @@ public class Main {
                 }
                 System.out.println(grafo.PesoArista(50,3));
             }
+            for(Integer key: dictCentros.keySet()){
+                GrafoLA g = Dijkstra(grafo, key, dictCentros);
+                dictGrafosC.put(key, g);
+            }
 
-            GrafoLA g = Dijkstra(grafo, 50, dictCentros);
-        System.out.println(g.PesoArista(50,10));
+        
 
 
         }
