@@ -11,53 +11,79 @@ public class Main {
     /*Este dijkstra se encargará de devolver un diccionario cuya clave es el nodo origen y como valor es un
     grafo que contiene los costos de alcanzar todos los nodos restantes.
      */
-    public static GrafoLA Dijkstra( GrafoLA g , int origen ) {
-        int vertice , aux_vertice , mejor_vertice , mejor_distancia ;
+    public static GrafoLA Dijkstra(GrafoLA g, int origen, Map<Integer, int[]> dictCentros) {
+        int vertice, aux_vertice, mejor_vertice, mejor_distancia;
 
-        GrafoLA distanciasMinimas = new GrafoLA() ;
+        GrafoLA distanciasMinimas = new GrafoLA();
         distanciasMinimas.InicializarGrafo();
         distanciasMinimas.AgregarVertice(origen);
+
         ConjuntoTDA vertices = g.Vertices();
         vertices.Sacar(origen);
-        while (! vertices.ConjuntoVacio()) {
+
+        // Agregar vértices que no están en dictCentros al grafo de distancias mínimas
+        while (!vertices.ConjuntoVacio()) {
             vertice = vertices.Elegir();
             vertices.Sacar(vertice);
-            distanciasMinimas.AgregarVertice(vertice);
-            if (g.ExisteArista(origen, vertice)) {
-                distanciasMinimas.AgregarArista( origen , vertice, g.PesoArista( origen , vertice ));
+
+            // Verificar si el vértice no es un centro de distribución
+            if (!dictCentros.containsKey(vertice)) {
+                distanciasMinimas.AgregarVertice(vertice);
+                if (g.ExisteArista(origen, vertice)) {
+                    distanciasMinimas.AgregarArista(origen, vertice, g.PesoArista(origen, vertice));
+                }
             }
         }
+
         ConjuntoTDA pendientes = g.Vertices();
         pendientes.Sacar(origen);
         ConjuntoA aux_pendientes = new ConjuntoA();
         aux_pendientes.InicializarConjunto();
+
+        // Aplicar Dijkstra sin considerar los centros en dictCentros
         while (!pendientes.ConjuntoVacio()) {
             mejor_distancia = 0;
             mejor_vertice = 0;
+
+            // Encontrar el vértice pendiente con la menor distancia
             while (!pendientes.ConjuntoVacio()) {
                 aux_vertice = pendientes.Elegir();
                 pendientes.Sacar(aux_vertice);
                 aux_pendientes.Agregar(aux_vertice);
-                if (( distanciasMinimas.ExisteArista(origen , aux_vertice) &&( mejor_distancia == 0 || (
-                        mejor_distancia > distanciasMinimas.PesoArista (origen , aux_vertice ))))) {
-                    mejor_distancia =distanciasMinimas.PesoArista( origen , aux_vertice ) ;
-                    mejor_vertice = aux_vertice ;
+
+                // Saltar los vértices que son centros de distribución
+                if (dictCentros.containsKey(aux_vertice)) {
+                    continue;
+                }
+
+                if (distanciasMinimas.ExisteArista(origen, aux_vertice) &&
+                        (mejor_distancia == 0 || mejor_distancia > distanciasMinimas.PesoArista(origen, aux_vertice))) {
+                    mejor_distancia = distanciasMinimas.PesoArista(origen, aux_vertice);
+                    mejor_vertice = aux_vertice;
                 }
             }
-            vertice = mejor_vertice ;
-            if ( vertice != 0) {
+
+            vertice = mejor_vertice;
+            if (vertice != 0) {
                 aux_pendientes.Sacar(vertice);
-                while (! aux_pendientes.ConjuntoVacio()) {
-                    aux_vertice = aux_pendientes.Elegir() ;
-                    aux_pendientes.Sacar( aux_vertice );
-                    pendientes.Agregar( aux_vertice );
-                    if ( g.ExisteArista( vertice , aux_vertice ) ) {
-                        if (! distanciasMinimas.ExisteArista( origen, aux_vertice ) )
-                        {distanciasMinimas.AgregarArista( origen, aux_vertice , distanciasMinimas.PesoArista( origen , vertice ) + g.PesoArista( vertice , aux_vertice ));
-                        } else {
-                            if( distanciasMinimas.PesoArista( origen, aux_vertice ) > distanciasMinimas.PesoArista( origen , vertice ) + g.PesoArista( vertice , aux_vertice )) {
-                                distanciasMinimas . AgregarArista (origen , aux_vertice , distanciasMinimas.PesoArista(origen , vertice ) + g.PesoArista(vertice , aux_vertice ));
-                            }
+
+                // Procesar las conexiones del vértice seleccionado
+                while (!aux_pendientes.ConjuntoVacio()) {
+                    aux_vertice = aux_pendientes.Elegir();
+                    aux_pendientes.Sacar(aux_vertice);
+                    pendientes.Agregar(aux_vertice);
+
+                    // Saltar si el vértice destino es un centro
+                    if (dictCentros.containsKey(aux_vertice)) {
+                        continue;
+                    }
+
+                    if (g.ExisteArista(vertice, aux_vertice)) {
+                        int nuevaDistancia = distanciasMinimas.PesoArista(origen, vertice) + g.PesoArista(vertice, aux_vertice);
+                        if (!distanciasMinimas.ExisteArista(origen, aux_vertice)) {
+                            distanciasMinimas.AgregarArista(origen, aux_vertice, nuevaDistancia);
+                        } else if (distanciasMinimas.PesoArista(origen, aux_vertice) > nuevaDistancia) {
+                            distanciasMinimas.AgregarArista(origen, aux_vertice, nuevaDistancia);
                         }
                     }
                 }
@@ -66,7 +92,8 @@ public class Main {
         return distanciasMinimas;
     }
 
-        public static void main(String[] args) {
+
+    public static void main(String[] args) {
         GrafoLA grafo = new GrafoLA();
         grafo.InicializarGrafo();
         //El valor de cada clave de dictCentros es un arreglo que contiene [Coso unitario de enviar mercadería al puerto, Costo fijo del Centro]
@@ -138,7 +165,8 @@ public class Main {
                 }
             }
 
-
+            GrafoLA g = Dijkstra(grafo, 50, dictCentros);
+        System.out.println(g.PesoArista(50,10));
 
 
         }
