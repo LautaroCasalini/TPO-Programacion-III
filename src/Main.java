@@ -136,6 +136,7 @@ public class Main {
                         System.out.println("Arista existe: " + u + " -> " + v + " con peso " + grafo.PesoArista(u, v));
                     }
                 }
+                System.out.println(grafo.PesoArista(50,3));
             }
 
 
