@@ -4,11 +4,43 @@ import TDAs.grafobi.GrafoLA;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.sql.SQLOutput;
 import java.util.*;
 
 public class Main {
-    public static ArrayList<Integer> BackTracking(ArrayList<Integer> centros, Integer index, Map<Integer, int[]> infoCentros, Map<Integer, Integer> infoClientes){
-        
+    //TODO: Aplicar Programación Dinámica
+    public static Combinacion ProgramacionDinamica(ArrayList<Integer> centrosInvolucrados, Map<Integer, GrafoLA> diccionarioGrafos, Map<Integer, int[]> diccionarioCentros, Map<Integer, Integer> diccionarioClientes){
+        Combinacion comb = new Combinacion(0,centrosInvolucrados);
+        return comb;
+    }
+
+
+    public static Combinacion BackTracking(ArrayList<Integer> centros, Map<Integer,GrafoLA> grafos,Integer index, Map<Integer, int[]> infoCentros, Map<Integer, Integer> infoClientes, ArrayList<Integer> centrosIncluidos){
+        //Caso base
+        if(index == centros.size() - 1){
+            Combinacion comb = ProgramacionDinamica(centrosIncluidos,grafos,infoCentros,infoClientes);
+
+            System.out.println("Mostrando los elementos que quedaron incluidos: ");
+            for (Integer i: centrosIncluidos){
+                System.out.print(i + " ");
+            }
+            System.out.println();
+            System.out.println("----------------");
+            return comb;
+        }
+        //Llamamos a la función aumentando el indice, en la primera llamada no incluimos el elemento pero en la segunda si
+        Combinacion combinacion1 = BackTracking(centros,grafos,index+1,infoCentros,infoClientes,centrosIncluidos);
+
+        ArrayList<Integer> centrosIncluidosCopy = new ArrayList<>(centrosIncluidos);
+        centrosIncluidosCopy.add(centros.get(index));
+        Combinacion combinacion2 = BackTracking(centros,grafos,index+1,infoCentros,infoClientes,centrosIncluidosCopy);
+
+        if (combinacion1.getValor() < combinacion2.getValor()){
+            return combinacion1;
+        } else {
+            return combinacion2;
+        }
+
     }
 
     /*Este dijkstra se encargará de devolver un diccionario cuya clave es el nodo origen y como valor es un
@@ -146,29 +178,12 @@ public class Main {
                         int costo = Integer.parseInt(NodosInfo[2]);
 
                         grafo.AgregarArista(nodoOrigen, nodoDestino, costo); // Agregar la arista
-                        System.out.println("Arista agregada: " + nodoOrigen + " -> " + nodoDestino + " (Costo: " + costo + ")");
                     }
                 }
             } catch (Exception e){
                 System.out.println("Error " + e);
             }
 
-
-            ConjuntoTDA vertices = grafo.Vertices();
-            while (!vertices.ConjuntoVacio()) {
-                int v = vertices.Elegir();
-                vertices.Sacar(v);
-
-                ConjuntoTDA vecinos = grafo.Vertices();
-                while (!vecinos.ConjuntoVacio()) {
-                    int u = vecinos.Elegir();
-                    vecinos.Sacar(u);
-                    if (grafo.ExisteArista(v, u)) {
-                        System.out.println("Arista existe: " + u + " -> " + v + " con peso " + grafo.PesoArista(u, v));
-                    }
-                }
-                System.out.println(grafo.PesoArista(50,3));
-            }
             for(Integer key: dictCentros.keySet()){
                 GrafoLA g = Dijkstra(grafo, key, dictCentros);
                 dictGrafosC.put(key, g);
@@ -178,6 +193,12 @@ public class Main {
             List<Integer> keys = new ArrayList<>(dictCentros.keySet());
             keys.sort(Collections.reverseOrder());
 
+            ArrayList<Integer> test = new ArrayList<>();
+            test.add(1);
+            test.add(2);
+            test.add(3);
+            ArrayList<Integer> centrosIncluidos = new ArrayList<>();
+            BackTracking(test,dictGrafosC,0,dictCentros,dictClientes,centrosIncluidos);
 
 
 
