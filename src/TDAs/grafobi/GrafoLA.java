@@ -2,7 +2,7 @@ package TDAs.grafobi;
 import TDAs.conjuntos.*;
 
 public class GrafoLA implements GrafoTDA {
-	//Nodo y Vertice son lo mismo. Pero en el código se entiende al vertice como un objeto y al Nodo como el número del Vertice
+	//Nodo y Vertice son lo mismo. Pero en el cÃ³digo se entiende al vertice como un objeto y al Nodo como el nÃºmero del Vertice
 	class NodoVertice{
 		int nodo;
 		NodoArista arista;
@@ -15,7 +15,7 @@ public class GrafoLA implements GrafoTDA {
 	}
 
 	NodoVertice origen;
-	
+
 	public void InicializarGrafo() {
 		origen = null;
 	}
@@ -27,13 +27,13 @@ public class GrafoLA implements GrafoTDA {
 		nuevo.sigNodo = origen;
 		origen = nuevo;
 	}
-	
+
 
 	public void EliminarVertice(int x) {
-		if (origen.nodo == x)					// El primer v�rtice es el que debe eliminarse
+		if (origen.nodo == x)					// El primer vï¿½rtice es el que debe eliminarse
 			origen = origen.sigNodo;
 		NodoVertice aux = origen;				// Se define un nodo viajero
-		while (aux != null) {					// El nodo "aux" recorre todos los v�rtices
+		while (aux != null) {					// El nodo "aux" recorre todos los vï¿½rtices
 			this.EliminarAristaEnNodo(aux, x);
 			if (aux.sigNodo != null && aux.sigNodo.nodo == x) {
 				aux.sigNodo = aux.sigNodo.sigNodo;
@@ -42,7 +42,7 @@ public class GrafoLA implements GrafoTDA {
 		}
 	}
 
-	private void EliminarAristaEnNodo(NodoVertice nodo, int v) { //El nodo ya est� encontrado
+	private void EliminarAristaEnNodo(NodoVertice nodo, int v) { //El nodo ya estï¿½ encontrado
 		NodoArista aux = nodo.arista;
 		if (aux != null) {
 			if (aux.nodoDestino.nodo == v) {		// La arista que debe eliminarse es la primera
@@ -50,13 +50,13 @@ public class GrafoLA implements GrafoTDA {
 			} else {								// La arista que debe eliminarse es otra
 				while(aux.sigArista != null && aux.sigArista.nodoDestino.nodo != v)
 					aux = aux.sigArista;
-				if (aux.sigArista != null)			// Se encontr� la arista
+				if (aux.sigArista != null)			// Se encontrï¿½ la arista
 					aux.sigArista = aux.sigArista.sigArista;
 			}
 		}
 	}
-	
-	private NodoVertice Vertice2Nodo(int x) {	// Devuelve el nodo del v�rtice o null 
+
+	private NodoVertice Vertice2Nodo(int x) {	// Devuelve el nodo del vï¿½rtice o null
 		NodoVertice aux = origen;
 		while(aux !=null && aux.nodo != x)
 			aux = aux.sigNodo;
@@ -117,6 +117,17 @@ public class GrafoLA implements GrafoTDA {
 			aux = aux.sigNodo;
 		}
 		return CNodos;
+	}
+
+	public int costo(int origen, int destino) {
+		// Verificar si existe una arista entre origen y destino
+		if (ExisteArista(origen, destino)) {
+			// Si existe, devolver el peso de la arista
+			return PesoArista(origen, destino);
+		} else {
+			// Devolver un valor grande si no hay conexión directa
+			return Integer.MAX_VALUE;
+		}
 	}
 
 }

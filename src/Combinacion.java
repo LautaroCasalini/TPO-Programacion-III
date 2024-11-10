@@ -5,10 +5,9 @@ public class Combinacion {
     private ArrayList<Integer> centros;
 
     public Combinacion(float valor,ArrayList<Integer> centros){
-        valor = valor;
-        centros = centros;
+        this.valor = valor;
+        this.centros = centros;
     }
-
     public float getValor() {
         return valor;
     }

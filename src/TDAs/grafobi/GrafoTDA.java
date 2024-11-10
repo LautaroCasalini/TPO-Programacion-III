@@ -10,4 +10,5 @@ public interface GrafoTDA {
 	public int PesoArista(int v1, int v2);
 	public boolean ExisteArista (int v1, int v2);
 	public ConjuntoTDA Vertices();
+	public int costo(int or,int des);
 }

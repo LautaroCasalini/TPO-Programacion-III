@@ -1,124 +1,129 @@
 import TDAs.conjuntos.ConjuntoA;
 import TDAs.conjuntos.ConjuntoTDA;
 import TDAs.grafobi.GrafoLA;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.sql.SQLOutput;
 import java.util.*;
 
 public class Main {
-    //TODO: Aplicar Programación Dinámica
-    public static Combinacion ProgramacionDinamica(ArrayList<Integer> centrosInvolucrados, Map<Integer, GrafoLA> diccionarioGrafos, Map<Integer, int[]> diccionarioCentros, Map<Integer, Integer> diccionarioClientes){
-        Combinacion comb = new Combinacion(0,centrosInvolucrados);
-        return comb;
-    }
+    public static int costoMinimo = Integer.MAX_VALUE;
+    public static List<Integer> combinacionOptima = new ArrayList<>();
+    private static Map<String, Integer> memoCostosTransporte = new HashMap<>();
 
-
-    public static Combinacion BackTracking(ArrayList<Integer> centros, Map<Integer,GrafoLA> grafos,Integer index, Map<Integer, int[]> infoCentros, Map<Integer, Integer> infoClientes, ArrayList<Integer> centrosIncluidos){
-        //Caso base
-        if(index == centros.size() - 1){
-            Combinacion comb = ProgramacionDinamica(centrosIncluidos,grafos,infoCentros,infoClientes);
-
-            System.out.println("Mostrando los elementos que quedaron incluidos: ");
-            for (Integer i: centrosIncluidos){
-                System.out.print(i + " ");
+    public static void BackTracking(Map<Integer, GrafoLA> grafos, List<Integer> centrosKeys, Integer index, Map<Integer, int[]> infoCentros,
+                                    Map<Integer, Integer> infoClientes, ArrayList<Integer> centrosIncluidos) {
+        if (index == centrosKeys.size()) {
+            if (centrosIncluidos.isEmpty()) {
+                return;
             }
-            System.out.println();
-            System.out.println("----------------");
-            return comb;
-        }
-        //Llamamos a la función aumentando el indice, en la primera llamada no incluimos el elemento pero en la segunda si
-        Combinacion combinacion1 = BackTracking(centros,grafos,index+1,infoCentros,infoClientes,centrosIncluidos);
-
-        ArrayList<Integer> centrosIncluidosCopy = new ArrayList<>(centrosIncluidos);
-        centrosIncluidosCopy.add(centros.get(index));
-        Combinacion combinacion2 = BackTracking(centros,grafos,index+1,infoCentros,infoClientes,centrosIncluidosCopy);
-
-        if (combinacion1.getValor() < combinacion2.getValor()){
-            return combinacion1;
-        } else {
-            return combinacion2;
+            int costoTotal = calcularCostoTotal(centrosIncluidos, grafos, infoCentros, infoClientes);
+            if (costoTotal < costoMinimo) {
+                costoMinimo = costoTotal;
+                combinacionOptima.clear();
+                combinacionOptima.addAll(centrosIncluidos);
+            }
+            return;
         }
 
+        int centro = centrosKeys.get(index);
+        centrosIncluidos.add(centro);
+        BackTracking(grafos, centrosKeys, index + 1, infoCentros, infoClientes, centrosIncluidos);
+
+        centrosIncluidos.remove(centrosIncluidos.size() - 1);
+        BackTracking(grafos, centrosKeys, index + 1, infoCentros, infoClientes, centrosIncluidos);
     }
 
-    /*Este dijkstra se encargará de devolver un diccionario cuya clave es el nodo origen y como valor es un
-    grafo que contiene los costos de alcanzar todos los nodos restantes.
-     */
-    public static GrafoLA Dijkstra(GrafoLA g, int origen, Map<Integer, int[]> dictCentros) {
-        int vertice, aux_vertice, mejor_vertice, mejor_distancia;
+    public static int calcularCostoTotal(ArrayList<Integer> centrosActivos, Map<Integer, GrafoLA> dictGrafosC,
+                                         Map<Integer, int[]> dictCentros, Map<Integer, Integer> dictClientes) {
+        int costoFijoTotal = 0;
+        for (int centro : centrosActivos) {
+            int[] datosCentro = dictCentros.get(centro);
+            if (datosCentro != null && datosCentro.length > 1) {
+                costoFijoTotal += datosCentro[1];
+            } else {
+                System.out.println("Error: Centro " + centro + " no tiene datos completos en dictCentros.");
+                return Integer.MAX_VALUE;
+            }
+        }
+        int costoTransporteTotal = calcularCostoAsignacionClientes(centrosActivos, dictGrafosC, dictClientes);
+        return costoFijoTotal + costoTransporteTotal;
+    }
 
+    public static int calcularCostoAsignacionClientes(ArrayList<Integer> centrosActivos, Map<Integer, GrafoLA> dictGrafosC,
+                                                      Map<Integer, Integer> dictClientes) {
+        int costoTransporteTotal = 0;
+        for (int cliente : dictClientes.keySet()) {
+            int centroMasCercano = encontrarCentroMasCercano(cliente, centrosActivos, dictGrafosC);
+            if (centroMasCercano == -1) {
+                System.out.println("Error: No se encontrÃ³ un centro accesible para el cliente " + cliente);
+                return Integer.MAX_VALUE;
+            }
+            String claveMemo = centroMasCercano + "-" + cliente;
+            int costoTransporte;
+            if (memoCostosTransporte.containsKey(claveMemo)) {
+                costoTransporte = memoCostosTransporte.get(claveMemo);
+            } else {
+                costoTransporte = dictGrafosC.get(centroMasCercano).costo(centroMasCercano, cliente) * dictClientes.get(cliente);
+                memoCostosTransporte.put(claveMemo, costoTransporte);
+            }
+            costoTransporteTotal += costoTransporte;
+        }
+        return costoTransporteTotal;
+    }
+
+    public static int encontrarCentroMasCercano(int cliente, ArrayList<Integer> centrosActivos, Map<Integer, GrafoLA> dictGrafosC) {
+        int distanciaMinima = Integer.MAX_VALUE;
+        int centroMasCercano = -1;
+        for (int centro : centrosActivos) {
+            GrafoLA grafoCentro = dictGrafosC.get(centro);
+            if (grafoCentro != null && grafoCentro.ExisteArista(centro, cliente)) {
+                int distancia = grafoCentro.costo(centro, cliente);
+                if (distancia < distanciaMinima) {
+                    distanciaMinima = distancia;
+                    centroMasCercano = centro;
+                }
+            }
+        }
+        return centroMasCercano;
+    }
+
+    public static GrafoLA Dijkstra(GrafoLA g, int origen, Map<Integer, int[]> dictCentros) {
         GrafoLA distanciasMinimas = new GrafoLA();
         distanciasMinimas.InicializarGrafo();
         distanciasMinimas.AgregarVertice(origen);
 
+        Map<Integer, Integer> distancia = new HashMap<>();
+        Map<Integer, Boolean> visitado = new HashMap<>();
+
         ConjuntoTDA vertices = g.Vertices();
-        vertices.Sacar(origen);
-
-        // Agregar vértices que no están en dictCentros al grafo de distancias mínimas
         while (!vertices.ConjuntoVacio()) {
-            vertice = vertices.Elegir();
+            int vertice = vertices.Elegir();
             vertices.Sacar(vertice);
-
-            // Verificar si el vértice no es un centro de distribución
-            if (!dictCentros.containsKey(vertice)) {
-                distanciasMinimas.AgregarVertice(vertice);
-                if (g.ExisteArista(origen, vertice)) {
-                    distanciasMinimas.AgregarArista(origen, vertice, g.PesoArista(origen, vertice));
-                }
-            }
+            distancia.put(vertice, Integer.MAX_VALUE);
+            visitado.put(vertice, false);
+            distanciasMinimas.AgregarVertice(vertice);
         }
+        distancia.put(origen, 0);
 
-        ConjuntoTDA pendientes = g.Vertices();
-        pendientes.Sacar(origen);
-        ConjuntoA aux_pendientes = new ConjuntoA();
-        aux_pendientes.InicializarConjunto();
+        for (int i = 0; i < distancia.size(); i++) {
+            int u = obtenerVerticeMinDistancia(distancia, visitado);
+            if (u == -1) break;
 
-        // Aplicar Dijkstra sin considerar los centros en dictCentros
-        while (!pendientes.ConjuntoVacio()) {
-            mejor_distancia = 0;
-            mejor_vertice = 0;
+            visitado.put(u, true);
 
-            // Encontrar el vértice pendiente con la menor distancia
-            while (!pendientes.ConjuntoVacio()) {
-                aux_vertice = pendientes.Elegir();
-                pendientes.Sacar(aux_vertice);
-                aux_pendientes.Agregar(aux_vertice);
+            ConjuntoTDA adyacentes = g.Vertices();
+            while (!adyacentes.ConjuntoVacio()) {
+                int v = adyacentes.Elegir();
+                adyacentes.Sacar(v);
 
-                // Saltar los vértices que son centros de distribución
-                if (dictCentros.containsKey(aux_vertice)) {
-                    continue;
-                }
-
-                if (distanciasMinimas.ExisteArista(origen, aux_vertice) &&
-                        (mejor_distancia == 0 || mejor_distancia > distanciasMinimas.PesoArista(origen, aux_vertice))) {
-                    mejor_distancia = distanciasMinimas.PesoArista(origen, aux_vertice);
-                    mejor_vertice = aux_vertice;
-                }
-            }
-
-            vertice = mejor_vertice;
-            if (vertice != 0) {
-                aux_pendientes.Sacar(vertice);
-
-                // Procesar las conexiones del vértice seleccionado
-                while (!aux_pendientes.ConjuntoVacio()) {
-                    aux_vertice = aux_pendientes.Elegir();
-                    aux_pendientes.Sacar(aux_vertice);
-                    pendientes.Agregar(aux_vertice);
-
-                    // Saltar si el vértice destino es un centro
-                    if (dictCentros.containsKey(aux_vertice)) {
-                        continue;
-                    }
-
-                    if (g.ExisteArista(vertice, aux_vertice)) {
-                        int nuevaDistancia = distanciasMinimas.PesoArista(origen, vertice) + g.PesoArista(vertice, aux_vertice);
-                        if (!distanciasMinimas.ExisteArista(origen, aux_vertice)) {
-                            distanciasMinimas.AgregarArista(origen, aux_vertice, nuevaDistancia);
-                        } else if (distanciasMinimas.PesoArista(origen, aux_vertice) > nuevaDistancia) {
-                            distanciasMinimas.AgregarArista(origen, aux_vertice, nuevaDistancia);
+                if (!visitado.get(v) && g.ExisteArista(u, v)) {
+                    int nuevaDist = distancia.get(u) + g.PesoArista(u, v);
+                    if (nuevaDist < distancia.get(v)) {
+                        distancia.put(v, nuevaDist);
+                        if (!distanciasMinimas.ExisteArista(origen, v)) {
+                            distanciasMinimas.AgregarArista(origen, v, nuevaDist);
+                        } else {
+                            distanciasMinimas.AgregarArista(origen, v, Math.min(distanciasMinimas.PesoArista(origen, v), nuevaDist));
                         }
                     }
                 }
@@ -127,17 +132,29 @@ public class Main {
         return distanciasMinimas;
     }
 
+    private static int obtenerVerticeMinDistancia(Map<Integer, Integer> distancia, Map<Integer, Boolean> visitado) {
+        int minDistancia = Integer.MAX_VALUE;
+        int minVertice = -1;
+
+        for (Map.Entry<Integer, Integer> entry : distancia.entrySet()) {
+            int vertice = entry.getKey();
+            int dist = entry.getValue();
+
+            if (!visitado.get(vertice) && dist < minDistancia) {
+                minDistancia = dist;
+                minVertice = vertice;
+            }
+        }
+        return minVertice;
+    }
 
     public static void main(String[] args) {
         GrafoLA grafo = new GrafoLA();
         grafo.InicializarGrafo();
-        //El valor de cada clave de dictCentros es un arreglo que contiene [Coso unitario de enviar mercadería al puerto, Costo fijo del Centro]
         Map<Integer, int[]> dictCentros = new HashMap<>();
-        //El valor de cada clave de dictClientes es el volumen de producción del cliente
         Map<Integer, Integer> dictClientes = new HashMap<>();
         Map<Integer, GrafoLA> dictGrafosC = new HashMap<>();
 
-        //Leemos ambos archivos y los pasamos a un GrafoTDA
         FileReader archivo;
         BufferedReader lector;
         try {
@@ -145,62 +162,56 @@ public class Main {
             if (archivo.ready()) {
                 lector = new BufferedReader(archivo);
                 String linea;
-                //Usamos un cont para diferenciar los clientes de los centros
-                int cont = 0;
+
                 while ((linea = lector.readLine()) != null) {
                     String[] entidadInfo = linea.split(",");
                     int clave = Integer.parseInt(entidadInfo[0]);
-                    if (cont < 50) {
+
+                    if (clave < 50) {
                         int valor = Integer.parseInt(entidadInfo[1]);
-                        dictClientes.put(clave,valor);
+                        dictClientes.put(clave, valor);
                     } else {
                         int[] valores = new int[2];
                         valores[0] = Integer.parseInt(entidadInfo[1]);
                         valores[1] = Integer.parseInt(entidadInfo[2]);
-                        dictCentros.put(clave,valores);
+                        dictCentros.put(clave, valores);
                     }
                     grafo.AgregarVertice(clave);
-                    cont ++;
                 }
             }
         } catch (Exception e) {
             System.out.println("Error: " + e);
         }
-            try {
-                archivo = new FileReader("src/Archivos/rutas.txt");
-                if (archivo.ready()) {
-                    lector = new BufferedReader(archivo);
-                    String linea;
-                    while ((linea = lector.readLine()) != null) {
-                        String[] NodosInfo = linea.split(",");
-                        int nodoOrigen = Integer.parseInt(NodosInfo[0]);
-                        int nodoDestino = Integer.parseInt(NodosInfo[1]);
-                        int costo = Integer.parseInt(NodosInfo[2]);
-
-                        grafo.AgregarArista(nodoOrigen, nodoDestino, costo); // Agregar la arista
-                    }
+        try {
+            archivo = new FileReader("src/Archivos/rutas.txt");
+            if (archivo.ready()) {
+                lector = new BufferedReader(archivo);
+                String linea;
+                while ((linea = lector.readLine()) != null) {
+                    String[] NodosInfo = linea.split(",");
+                    int nodoOrigen = Integer.parseInt(NodosInfo[0]);
+                    int nodoDestino = Integer.parseInt(NodosInfo[1]);
+                    int costo = Integer.parseInt(NodosInfo[2]);
+                    grafo.AgregarArista(nodoOrigen, nodoDestino, costo);
                 }
-            } catch (Exception e){
-                System.out.println("Error " + e);
             }
-
-            for(Integer key: dictCentros.keySet()){
-                GrafoLA g = Dijkstra(grafo, key, dictCentros);
-                dictGrafosC.put(key, g);
-            }
-
-            //Lista con los centros ordenados de mayor a menor
-            List<Integer> keys = new ArrayList<>(dictCentros.keySet());
-            keys.sort(Collections.reverseOrder());
-
-            ArrayList<Integer> test = new ArrayList<>();
-            test.add(1);
-            test.add(2);
-            test.add(3);
-            ArrayList<Integer> centrosIncluidos = new ArrayList<>();
-            BackTracking(test,dictGrafosC,0,dictCentros,dictClientes,centrosIncluidos);
-
-
-
+        } catch (Exception e) {
+            System.out.println("Error " + e);
         }
+
+        for (Integer key : dictCentros.keySet()) {
+            GrafoLA g = Dijkstra(grafo, key, dictCentros);
+            dictGrafosC.put(key, g);
+        }
+
+        List<Integer> keys = new ArrayList<>(dictCentros.keySet());
+        keys.sort(Collections.reverseOrder());
+
+        ArrayList<Integer> centrosIncluidos = new ArrayList<>();
+        List<Integer> centrosKeys = new ArrayList<>(dictCentros.keySet());
+        BackTracking(dictGrafosC, centrosKeys, 0, dictCentros, dictClientes, centrosIncluidos);
+
+        System.out.println("Mejor combinación de centros activos: " + combinacionOptima);
+        System.out.println("Costo mínimo total: " + costoMinimo);
+    }
 }

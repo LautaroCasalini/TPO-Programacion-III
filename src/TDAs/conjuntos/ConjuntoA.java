@@ -4,27 +4,27 @@ package TDAs.conjuntos;
 public class ConjuntoA implements ConjuntoTDA{
 	private int[] a;
 	private int cant;
-	
+
 	public void InicializarConjunto() {
 		a = new int[100];
 		cant = 0;
 	}
-	
+
 	public void Agregar(int x) {
 		if (!this.Pertenece(x)) {
 			a[cant]=x;
 			cant++;
 		}
 	}
-	
+
 	public boolean ConjuntoVacio() {
 		return(cant==0);
 	}
-	
+
 	public int Elegir() {
 		return a[cant - 1];
 	}
-	
+
 	public boolean Pertenece(int x) {
 		int i = 0;
 		while (i< cant && a[i]!=x) {
@@ -32,7 +32,7 @@ public class ConjuntoA implements ConjuntoTDA{
 		}
 		return (i<cant);
 	}
-	
+
 	public void Sacar(int x) {
 		int i = 0;
 		while (i<cant && a[i]!=x) {
@@ -43,7 +43,7 @@ public class ConjuntoA implements ConjuntoTDA{
 			cant--;
 		}
 	}
-	
+
 	public void MostrarConjunto() {
 		ConjuntoTDA aux = new ConjuntoA();
 		aux.InicializarConjunto();
@@ -61,9 +61,9 @@ public class ConjuntoA implements ConjuntoTDA{
 			aux.Sacar(g);
 			this.Agregar(g);
 		}
-		
+
 	}
-	
+
 	public boolean TodosPertenecen(ConjuntoTDA origen) {
 		boolean todospert = true;
 		int g;
@@ -81,10 +81,10 @@ public class ConjuntoA implements ConjuntoTDA{
 			int h=aux.Elegir();
 			aux.Sacar(h);
 			origen.Agregar(h);
-			
+
 		}
 		return(todospert);
-		
+
 	}
-	
+
 }

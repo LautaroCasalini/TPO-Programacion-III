@@ -7,7 +7,7 @@ public class GrafoMA {
 	int[][] MAdy;
 	int[] Etiqs;
 	int cantNodos;
-	
+
 	public void InicializarGrafo() {
 		MAdy = new int [n][n];
 		Etiqs = new int [n];
@@ -21,7 +21,7 @@ public class GrafoMA {
 		}
 		cantNodos++;
 	}
-	
+
 	private int Vert2Indice(int v) {
 		int i = cantNodos-1;
 		while(i>=0 && Etiqs[i]!=v) {
@@ -57,13 +57,13 @@ public class GrafoMA {
 		int d = Vert2Indice(v2);
 		return(MAdy[o][d]);
 	}
-	
+
 	public boolean ExisteArista(int v1, int v2) {
 		int o = Vert2Indice(v1);
 		int d = Vert2Indice(v2);
 		return(MAdy[o][d]!=0);
 	}
-	
+
 	public ConjuntoTDA Vertices() {
 		ConjuntoTDA Vert = new ConjuntoA();
 		Vert.InicializarConjunto();
