@@ -62,13 +62,13 @@ public class Main {
             }
         }
 
-        int costoTransporteTotal = calcularCostoAsignacionClientes(centrosActivos, dictGrafosC, dictClientes, costoFijoTotal);
+        int costoTransporteTotal = calcularCostoAsignacionClientes(centrosActivos, dictGrafosC, dictClientes, costoFijoTotal,dictCentros);
         return costoFijoTotal + costoTransporteTotal;
     }
 
     // Se utiliza esta función para calcular el costo total por el transporte.
     public static int calcularCostoAsignacionClientes(ArrayList<Integer> centrosActivos, Map<Integer, GrafoLA> dictGrafosC,
-                                                      Map<Integer, Integer> dictClientes, int costoFijoTotal) {
+                                                      Map<Integer, Integer> dictClientes, int costoFijoTotal, Map<Integer, int[]> dictCentros) {
         int costoTransporteTotal = 0;
         for (int cliente : dictClientes.keySet()) {
             int[] resultado = encontrarCentroMasCercano(cliente, centrosActivos, dictGrafosC);
@@ -81,7 +81,9 @@ public class Main {
                 return Integer.MAX_VALUE;  // Retorna un valor alto para evitar esta combinación
             }
 
-            int costoTransporte = distanciaMinima * dictClientes.get(cliente);
+            int costoTrasladoPuerto = dictCentros.get(centroMasCercano)[0];
+            // Calcular el costo de transporte total por cliente considerando centro y puerto
+            int costoTransporte = (distanciaMinima + costoTrasladoPuerto) * dictClientes.get(cliente);
             costoTransporteTotal += costoTransporte;
 
             if(costoTransporteTotal+costoFijoTotal>costoMinimo){
