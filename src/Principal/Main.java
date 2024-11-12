@@ -239,6 +239,6 @@ public class Main {
         BackTracking(dictGrafosC, centrosKeys, 0, dictCentros, dictClientes, new ArrayList<>(),0);
 
         System.out.println("Mejor combinación de centros activos: " + combinacionOptima);
-        System.out.println("Costo mínimo total: " + costoMinimo);
+        System.out.println("Costo mínimo total: $" + costoMinimo);
     }
 }
