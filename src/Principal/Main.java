@@ -1,6 +1,7 @@
-import TDAs.conjuntos.ConjuntoA;
-import TDAs.conjuntos.ConjuntoTDA;
-import TDAs.grafobi.GrafoLA;
+package Principal;
+
+import TDA.*;
+import Implementacion.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.*;
@@ -8,16 +9,18 @@ import java.util.*;
 public class Main {
     public static int costoMinimo = Integer.MAX_VALUE;
     public static List<Integer> combinacionOptima = new ArrayList<>();
+    private static Map<String, int[]> memoCentroMasCercano = new HashMap<>();
+
 
     public static void BackTracking(Map<Integer, GrafoLA> grafos, List<Integer> centrosKeys, int index,
                                     Map<Integer, int[]> infoCentros, Map<Integer, Integer> infoClientes,
                                     ArrayList<Integer> centrosIncluidos, int costoFijoAcumulado) {
+        // Caso Base
         if (index == centrosKeys.size()) {
             // Verificar que haya al menos un centro activo en la combinación actual
             if (centrosIncluidos.isEmpty()) {
                 return; // Ignorar esta combinación ya que no hay centros activos
             }
-
             int costoTotal = calcularCostoTotal(centrosIncluidos, grafos, infoCentros, infoClientes);
             // Actualizar si se encuentra un costo menor
             if (costoTotal < costoMinimo) {
@@ -32,7 +35,7 @@ public class Main {
         int costoFijoCentro = infoCentros.get(centro)[1];
         int nuevoCostoFijoAcumulado = costoFijoAcumulado + costoFijoCentro;
 
-        // Podar esta rama si el costo fijo acumulado ya supera el costo mínimo
+        // Podar esta rama si el costo fijo acumulado ya supera el costo mínimo actual
         if (nuevoCostoFijoAcumulado > costoMinimo) {
             return;
         }
@@ -61,7 +64,6 @@ public class Main {
                 return Integer.MAX_VALUE;
             }
         }
-
         int costoTransporteTotal = calcularCostoAsignacionClientes(centrosActivos, dictGrafosC, dictClientes, costoFijoTotal,dictCentros);
         return costoFijoTotal + costoTransporteTotal;
     }
@@ -74,18 +76,10 @@ public class Main {
             int[] resultado = encontrarCentroMasCercano(cliente, centrosActivos, dictGrafosC);
             int centroMasCercano = resultado[0];
             int distanciaMinima = resultado[1];
-
-            // Verificación de que se encontró un centro válido
-            if (centroMasCercano == -1) {
-                System.out.println("Error: No se encontró un centro accesible para el cliente " + cliente);
-                return Integer.MAX_VALUE;  // Retorna un valor alto para evitar esta combinación
-            }
-
             int costoTrasladoPuerto = dictCentros.get(centroMasCercano)[0];
             // Calcular el costo de transporte total por cliente considerando centro y puerto
             int costoTransporte = (distanciaMinima + costoTrasladoPuerto) * dictClientes.get(cliente);
             costoTransporteTotal += costoTransporte;
-
             if(costoTransporteTotal+costoFijoTotal>costoMinimo){
                 return costoTransporteTotal;
             } // Si el costo de transporte actual + costo fijo supera al costo mínimo actual se corta el proceso de
@@ -96,23 +90,31 @@ public class Main {
     }
 
 
-    // Esta función se utiliza para encontrar el centro menos costoso dede el nodo. Se le envian los centros de la combinación
+    // Esta función se utiliza para encontrar el centro menos costoso desde el nodo. Se le envian los centros de la combinación
     // actual junto el el cliente de la iteración y los Dijkstra para obtener los caminos de ese nodo a los centros activos.
+    // Se utiliza un hash para guardar las keys cliente-combinación. De existir, se devuelve el resultaod obtenido con anterioridad
     public static int[] encontrarCentroMasCercano(int cliente, ArrayList<Integer> centrosActivos, Map<Integer, GrafoLA> dictGrafosC) {
-        int distanciaMinima = Integer.MAX_VALUE;
+        String memoKey = cliente + "-" + centrosActivos.toString();
+        if (memoCentroMasCercano.containsKey(memoKey)) {
+            return memoCentroMasCercano.get(memoKey);
+        }
+        // Si no está en el memo, se calcula el centro más cercano
+        int costoDistanciaMinima = Integer.MAX_VALUE;
         int centroMasCercano = -1;
-
         for (int centro : centrosActivos) {
             GrafoLA grafoCentro = dictGrafosC.get(centro);
             if (grafoCentro != null && grafoCentro.ExisteArista(centro, cliente)) {
-                int distancia = grafoCentro.costo(centro, cliente);
-                if (distancia < distanciaMinima) {
-                    distanciaMinima = distancia;
+                int costoDistancia = grafoCentro.costo(centro, cliente);
+                if (costoDistancia < costoDistanciaMinima) {
+                    costoDistanciaMinima = costoDistancia;
                     centroMasCercano = centro;
                 }
             }
         }
-        return new int[]{centroMasCercano, distanciaMinima};  // Retorna el centro y la distancia mínima
+        int[] resultado = new int[]{centroMasCercano, costoDistanciaMinima};
+        memoCentroMasCercano.put(memoKey, resultado);
+
+        return resultado;
     }
 
 
@@ -187,7 +189,7 @@ public class Main {
         FileReader archivo;
         BufferedReader lector;
         try {
-            archivo = new FileReader("src/Archivos/clientesYCentros.txt");
+            archivo = new FileReader("src/clientesYCentros.txt");
             if (archivo.ready()) {
                 lector = new BufferedReader(archivo);
                 String linea;
@@ -212,7 +214,7 @@ public class Main {
             System.out.println("Error: " + e);
         }
         try {
-            archivo = new FileReader("src/Archivos/rutas.txt");
+            archivo = new FileReader("src/rutas.txt");
             if (archivo.ready()) {
                 lector = new BufferedReader(archivo);
                 String linea;

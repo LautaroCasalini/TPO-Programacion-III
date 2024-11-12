@@ -1,5 +1,6 @@
-package TDAs.grafobi;
-import TDAs.conjuntos.*;
+package Implementacion;
+import TDA.ConjuntoTDA;
+import TDA.GrafoTDA;
 
 public class GrafoLA implements GrafoTDA {
 	//Nodo y Vertice son lo mismo. Pero en el cÃ³digo se entiende al vertice como un objeto y al Nodo como el nÃºmero del Vertice
@@ -108,8 +109,9 @@ public class GrafoLA implements GrafoTDA {
 		return (aux != null);
 	}
 
+	@Override
 	public ConjuntoTDA Vertices() {
-		ConjuntoTDA CNodos = new ConjuntoA();
+		ConjuntoTDA CNodos = new Conjunto();
 		CNodos.InicializarConjunto();
 		NodoVertice aux = origen;
 		while (aux != null) {
@@ -118,6 +120,7 @@ public class GrafoLA implements GrafoTDA {
 		}
 		return CNodos;
 	}
+
 
 	public int costo(int origen, int destino) {
 		// Verificar si existe una arista entre origen y destino
