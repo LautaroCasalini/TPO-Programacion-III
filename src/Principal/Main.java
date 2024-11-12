@@ -189,7 +189,7 @@ public class Main {
         FileReader archivo;
         BufferedReader lector;
         try {
-            archivo = new FileReader("src/clientesYCentros.txt");
+            archivo = new FileReader("src/Archivos/clientesYCentros.txt");
             if (archivo.ready()) {
                 lector = new BufferedReader(archivo);
                 String linea;
@@ -214,7 +214,7 @@ public class Main {
             System.out.println("Error: " + e);
         }
         try {
-            archivo = new FileReader("src/rutas.txt");
+            archivo = new FileReader("src/Archivos/rutas.txt");
             if (archivo.ready()) {
                 lector = new BufferedReader(archivo);
                 String linea;
